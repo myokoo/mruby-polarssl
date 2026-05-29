@@ -476,7 +476,7 @@ static mrb_value mrb_ecdsa_sign(mrb_state *mrb, mrb_value self) {
   }
 
   if (ret == 0) {
-    return mrb_str_new(mrb, &str, len*2);
+    return mrb_str_new(mrb, (char *)str, len*2);
   } else {
     return mrb_fixnum_value(ret);
   }
