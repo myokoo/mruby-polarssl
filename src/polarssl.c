@@ -454,7 +454,8 @@ static mrb_value mrb_ecdsa_private_key(mrb_state *mrb, mrb_value self) {
 static mrb_value mrb_ecdsa_sign(mrb_state *mrb, mrb_value self) {
   ctr_drbg_context *ctr_drbg;
   unsigned char buf[512], str[1024];
-  int i, j, len=0, ret=0;
+  int ret=0;
+  size_t i, j, len=0;
   ecdsa_context *ecdsa;
   mrb_value hash, obj;
 
