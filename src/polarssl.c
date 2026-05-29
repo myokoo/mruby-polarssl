@@ -436,10 +436,10 @@ static mrb_value mrb_ecdsa_private_key(mrb_state *mrb, mrb_value self) {
   memset(&str, 0, sizeof(str));
   memset(&buf, 0, sizeof(buf));
 
-  if( ecp_point_write_binary( &ecdsa->grp, &ecdsa->d,
-        POLARSSL_ECP_PF_COMPRESSED, &len, buf, sizeof(buf) ) != 0 )
+  len = mpi_size( &ecdsa->d );
+  if( mpi_write_binary( &ecdsa->d, buf, len ) != 0 )
   {
-    mrb_raise(mrb, E_RUNTIME_ERROR, "can't extract Public Key");
+    mrb_raise(mrb, E_RUNTIME_ERROR, "can't extract Private Key");
     return mrb_false_value();
   }
 
@@ -448,8 +448,7 @@ static mrb_value mrb_ecdsa_private_key(mrb_state *mrb, mrb_value self) {
         "0123456789ABCDEF" [buf[i] % 16] );
   }
 
-  /*return mrb_str_new(mrb, str, len*2);*/
-  return mrb_str_new(mrb, &str[2], len*2 - 2);
+  return mrb_str_new(mrb, (char *)str, len*2);
 }
 
 static mrb_value mrb_ecdsa_sign(mrb_state *mrb, mrb_value self) {
