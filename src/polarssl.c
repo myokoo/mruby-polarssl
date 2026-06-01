@@ -436,10 +436,10 @@ static mrb_value mrb_ecdsa_private_key(mrb_state *mrb, mrb_value self) {
   memset(&str, 0, sizeof(str));
   memset(&buf, 0, sizeof(buf));
 
-  if( ecp_point_write_binary( &ecdsa->grp, &ecdsa->d,
-        POLARSSL_ECP_PF_COMPRESSED, &len, buf, sizeof(buf) ) != 0 )
+  len = mpi_size( &ecdsa->d );
+  if( mpi_write_binary( &ecdsa->d, buf, len ) != 0 )
   {
-    mrb_raise(mrb, E_RUNTIME_ERROR, "can't extract Public Key");
+    mrb_raise(mrb, E_RUNTIME_ERROR, "can't extract Private Key");
     return mrb_false_value();
   }
 
@@ -448,14 +448,14 @@ static mrb_value mrb_ecdsa_private_key(mrb_state *mrb, mrb_value self) {
         "0123456789ABCDEF" [buf[i] % 16] );
   }
 
-  /*return mrb_str_new(mrb, str, len*2);*/
-  return mrb_str_new(mrb, &str[2], len*2 - 2);
+  return mrb_str_new(mrb, (char *)str, len*2);
 }
 
 static mrb_value mrb_ecdsa_sign(mrb_state *mrb, mrb_value self) {
   ctr_drbg_context *ctr_drbg;
   unsigned char buf[512], str[1024];
-  int i, j, len=0, ret=0;
+  int ret=0;
+  size_t i, j, len=0;
   ecdsa_context *ecdsa;
   mrb_value hash, obj;
 
@@ -476,7 +476,7 @@ static mrb_value mrb_ecdsa_sign(mrb_state *mrb, mrb_value self) {
   }
 
   if (ret == 0) {
-    return mrb_str_new(mrb, &str, len*2);
+    return mrb_str_new(mrb, (char *)str, len*2);
   } else {
     return mrb_fixnum_value(ret);
   }
@@ -697,10 +697,6 @@ void mrb_mruby_polarssl_gem_init(mrb_state *mrb) {
   des3 = mrb_define_class_under(mrb, cipher, "DES3", cipher);
   mrb_define_class_method(mrb, des3, "encrypt", mrb_des3_encrypt, MRB_ARGS_REQ(4));
   mrb_define_class_method(mrb, des3, "decrypt", mrb_des3_decrypt, MRB_ARGS_REQ(4));
-
-  base64 = mrb_define_module_under(mrb, p, "Base64");
-  mrb_define_class_method(mrb, base64, "encode", mrb_base64_encode, MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb, base64, "decode", mrb_base64_decode, MRB_ARGS_REQ(1));
 }
 
 void mrb_mruby_polarssl_gem_final(mrb_state *mrb) {
